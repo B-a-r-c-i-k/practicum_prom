@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client
+  labels:
+    app: client
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: client
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: '25%'
+      maxSurge: '25%'
+  template:
+    metadata:
+      labels:
+        app: client
+    spec:
+      containers:
+        - image: my-go-app
+          imagePullPolicy: IfNotPresent
+          name: client
+          ports:
+            - containerPort: 80
+          volumeMounts:
+          - name: empty
+            mountPath: /app/logs
+          envFrom:
+          - configMapRef:
+              name: hello-config
+      volumes:
+      - name: empty
+        # emptyDir: {} - 5 part upd
+        hostPath:
+          path: /logs
+          type: DirectoryOrCreate
